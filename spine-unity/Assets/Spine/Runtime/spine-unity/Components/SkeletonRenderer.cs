@@ -239,6 +239,7 @@ namespace Spine.Unity {
 					Initialize(false);
 					if (meshRenderer)
 						meshRenderer.enabled = false;
+					updateMode = UpdateMode.FullUpdate;
 				}
 			}
 			remove {
@@ -331,7 +332,8 @@ namespace Spine.Unity {
 
 		public virtual void Awake () {
 			Initialize(false);
-			updateMode = updateWhenInvisible;
+			if (generateMeshOverride == null || !disableRenderingOnOverride)
+				updateMode = updateWhenInvisible;
 		}
 
 #if UNITY_EDITOR && CONFIGURABLE_ENTER_PLAY_MODE
@@ -701,7 +703,12 @@ namespace Spine.Unity {
 			Material[] originalMaterials = maskMaterials.materialsMaskDisabled;
 			materialsToFill = new Material[originalMaterials.Length];
 			for (int i = 0; i < originalMaterials.Length; i++) {
-				Material newMaterial = new Material(originalMaterials[i]);
+				Material originalMaterial = originalMaterials[i];
+				if (originalMaterial == null) {
+					materialsToFill[i] = null;
+					continue;
+				}
+				Material newMaterial = new Material(originalMaterial);
 				newMaterial.SetFloat(STENCIL_COMP_PARAM_ID, (int)maskFunction);
 				materialsToFill[i] = newMaterial;
 			}
